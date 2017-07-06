@@ -2,7 +2,7 @@
 /**
  * Top Domain
  *
- * @version    0.1 (2017-07-05 00:01:00 GMT)
+ * @version    0.2 (2017-07-06 08:13:00 GMT)
  * @author     Peter Kahl <peter.kahl@colossalmind.com>
  * @since      2017-07-05
  * @copyright  2017 Peter Kahl
@@ -59,9 +59,24 @@ class TopDomain {
    *
    */
   public function FindDomain($needle) {
-    $needle = strtolower($needle);
-    $needle = preg_replace('/[^a-z0-9\.-]/', '', $needle);
-    $needle = preg_replace('/^www\./', '', $needle);
+    if (function_exists('shell_exec')) {
+      return $this->XFindDomain($needle);
+    }
+    return $this->PFindDomain($needle);
+  }
+
+  #===================================================================
+
+  /**
+   * Find domain's rank. Whether or not in top 1 million.
+   * Using PHP method.
+   */
+  public function PFindDomain($needle) {
+    $start   = microtime(true);
+    $needle  = strtolower($needle);
+    $needle  = preg_replace('/[^a-z0-9\.-]/', '', $needle);
+    $needle  = preg_replace('/^www\./', '', $needle);
+    $escaped = str_replace('.', '\.', $needle);
     $file = $this->CacheDir . $this->dbFile;
     $openObj = new SplFileObject($file);
     $candidate = array();
@@ -71,11 +86,11 @@ class TopDomain {
         list($rank, $domain) = explode(',', $line);
         if ($domain == $needle) {
           return array(
-            'domain' => $domain,
-            'rank'   => $rank,
+            'domain'   => $domain,
+            'rank'     => $rank,
+            'exectime' => $this->benchmark($start),
           );
         }
-        $escaped = str_replace('.', '\.', $needle);
         if (preg_match('/'. $escaped .'$/', $domain)) {
           $candidate = array(
             'domain' => $domain,
@@ -84,7 +99,33 @@ class TopDomain {
         }
       }
     }
+    $candidate['exectime'] = $this->benchmark($start);
     return $candidate;
+  }
+
+  #===================================================================
+
+  /**
+   * Find domain's rank. Whether or not in top 1 million.
+   * Using shell command method.
+   */
+  public function XFindDomain($needle) {
+    $start   = microtime(true);
+    $needle  = strtolower($needle);
+    $needle  = preg_replace('/[^a-z0-9\.-]/', '', $needle);
+    $needle  = preg_replace('/^www\./', '', $needle);
+    $escaped = str_replace('.', '\.', $needle);
+    $file = $this->CacheDir . $this->dbFile;
+    $line = trim(shell_exec('cat '. $file .' | grep ",'. $escaped .'$"'));
+    if (!empty($line)) {
+      list($rank, $domain) = explode(',', $line);
+      return array(
+        'domain'   => $domain,
+        'rank'     => $rank,
+        'exectime' => $this->benchmark($start),
+      );
+    }
+    return array();
   }
 
   #===================================================================
@@ -137,6 +178,21 @@ class TopDomain {
       return trim(shell_exec('cat '. $file .' | wc -l'));
     }
     return 1000000;
+  }
+
+  #===================================================================
+
+  private function benchmark($st) {
+    $val = (microtime(true) - $st);
+    if ($val >= 1) {
+      return number_format($val, 2, '.', ',').' sec';
+    }
+    $val = $val * 1000;
+    if ($val >= 1) {
+      return number_format($val, 2, '.', ',').' msec';
+    }
+    $val = $val * 1000;
+    return number_format($val, 2, '.', ',').' μsec';
   }
 
   #===================================================================
