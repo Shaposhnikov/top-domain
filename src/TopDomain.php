@@ -2,7 +2,7 @@
 /**
  * Top Domain
  *
- * @version    0.2 (2017-07-06 08:13:00 GMT)
+ * @version    0.3 (2017-07-06 08:23:00 GMT)
  * @author     Peter Kahl <peter.kahl@colossalmind.com>
  * @since      2017-07-05
  * @copyright  2017 Peter Kahl
@@ -71,7 +71,7 @@ class TopDomain {
    * Find domain's rank. Whether or not in top 1 million.
    * Using PHP method.
    */
-  public function PFindDomain($needle) {
+  private function PFindDomain($needle) {
     $start   = microtime(true);
     $needle  = strtolower($needle);
     $needle  = preg_replace('/[^a-z0-9\.-]/', '', $needle);
@@ -109,7 +109,7 @@ class TopDomain {
    * Find domain's rank. Whether or not in top 1 million.
    * Using shell command method.
    */
-  public function XFindDomain($needle) {
+  private function XFindDomain($needle) {
     $start   = microtime(true);
     $needle  = strtolower($needle);
     $needle  = preg_replace('/[^a-z0-9\.-]/', '', $needle);
