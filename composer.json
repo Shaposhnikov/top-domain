@@ -4,7 +4,7 @@
 	"description": "Top 1 million domains list. Random domain. Check if your domain is in the top 1 million. Get a list of X domains.",
 	"keywords": ["domain-rank", "website-rank", "domain-popularity", "website-popularity", "random-domain", "random-website"],
 	"homepage": "https://github.com/peterkahl/top-domain",
-	"license": "Apache License Version 2.0",
+	"license": "Apache-2.0",
 	"authors": [
 		{
 			"name": "Peter Kahl",
